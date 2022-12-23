@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Details</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let post = [[${post}]]; // editPost, deletePost
+        /*]]*/
+
+        function submitEdit() {
+            let id = post['id'];
+            let new_title = $(`#title`).val();
+            let new_contents = $(`#contents`).val();
+            let new_username = $(`#username`).val();
+            let new_password = $(`#password`).val();
+
+            if (!(isValidContents(new_contents) && isValidPassword(new_password))) {
+                return;
+            }
+
+            let data = {'title': new_title,
+                        'contents': new_contents,
+                        'username': new_username,
+                        'password': new_password};
+
+            $.ajax({
+                type: "PUT",
+                url: `/api/details/${id}`,
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('메시지 변경에 성공하였습니다.');
+                    window.location.reload();
+                }
+            });
+        }
+
+        function editPost() {
+            showEdits();
+            let title = post['title'];
+            let contents = post['contents'];
+            let username = post['username'];
+            let password = post['password'];
+            $(`#title`).val(title);
+            $(`#contents`).val(contents);
+            $(`#username`).val(username);
+            $(`#password`).val("");
+        }
+
+        function submitDelete() {
+            let id = post['id'];
+            let password = $('#post-delete-password').val();
+
+            if (!isValidPassword(password)) {
+                return;
+            }
+
+            $.ajax({
+                type: "DELETE",
+                url: `/api/details/${id}`,
+                contentType: "application/json",
+                data: password,
+                success: function (response) {
+                    if (response === "wrong password") {
+                        alert("비밀번호가 다릅니다.");
+                    } else if (response === "delete success") {
+                        alert("삭제 완료");
+                        window.location.href = '/';
+                    } else {
+                        alert("오류 발생")
+                    }
+                }
+            });
+        }
+
+        // 글이 비밀번호가 올바른지 확인합니다
+        function isValidPassword(password) {
+            if (password === '') {
+                alert('비밀번호를 입력해주세요');
+                return false;
+            }
+            if (password.trim().length < 4) {
+                alert('비밀번호는 4자 이상 입력해주세요');
+                return false;
+            }
+            return true;
+        }
+
+        // 글이 내용이 올바른지 확인합니다
+        function isValidContents(contents) {
+            if (contents === '') {
+                alert('내용을 입력해주세요');
+                return false;
+            }
+            if (contents.trim().length > 140) {
+                alert('공백 포함 140자 이하로 입력해주세요');
+                return false;
+            }
+            return true;
+        }
+
+        function cancelDeletePassword() {
+            $(`#post-delete-password`).hide().val("");
+            $(`#post-delete-cancel-button`).hide();
+            $(`#post-delete-submit-button`).hide();
+
+            $(`#post-edit-button`).show();
+            $(`#post-delete-button`).show();
+        }
+
+        function showDeletePassword() {
+            $(`#post-delete-password`).show();
+            $(`#post-delete-cancel-button`).show();
+            $(`#post-delete-submit-button`).show();
+
+            $(`#post-edit-button`).hide();
+            $(`#post-delete-button`).hide();
+        }
+
+        function showEdits() {
+            $(`#post-editArea`).show();
+
+            $(`#post-data`).hide();
+            $(`#post-content`).hide();
+        }
+
+        function cancelEdits() {
+            $(`#post-editArea`).hide();
+
+            $(`#post-data`).show();
+            $(`#post-content`).show();
+        }
+
+    </script>
+</head>
+<body>
+    <div id="post-data">
+        <div>
+            <span>제ㅤㅤ목 : </span>
+            <h2 th:text="${post.getTitle()}" style="display: inline"></h2>
+        </div>
+        <div>
+            <span>이ㅤㅤ름 : </span>
+            <span th:text="${post.getUsername()}"></span>
+        </div>
+        <div>
+            <span>생성날짜 : </span>
+            <span th:text="${post.getCreatedAt()}"></span>
+        </div>
+        <div>
+            <span>수정날짜 : </span>
+            <span th:text="${post.getModifiedAt()}"></span>
+        </div>
+        <div style="margin-top: 10px;">
+            <input id="post-delete-password" type="password" placeholder="비밀번호를 입력해주세요" style="display: none;">
+            <button id="post-delete-cancel-button" style="display: none;" onclick="cancelDeletePassword()">cancel</button>
+<!--            <input id="post-delete-cancel-button" type="button" value="취소" style="display: none;" onclick="cancelDeletePassword()">-->
+
+            <button id="post-edit-button" onclick="editPost()">edit</button>
+            <button id="post-delete-button" onclick="showDeletePassword()">delete</button>
+<!--            <input id="post-delete-submit-button" type="button" value="삭제" style="display: none;" onclick="submitDelete()">-->
+            <button id="post-delete-submit-button" style="display: none;" onclick="submitDelete()">delete</button>
+        </div>
+    </div>
+    <div id="post-content">
+        <p th:text="${post.getContents()}"></p>
+    </div>
+    <div id="post-editArea" style="display: none;">
+        <div>
+            <div>제목</div>
+            <textarea class="field" name="title" th:id="title" cols="30" rows="1"></textarea>
+        </div>
+        <div>
+            <div>내용</div>
+            <textarea class="field" name="contents" th:id="contents" cols="30" rows="5"></textarea>
+        </div>
+        <div>
+            <div>이름</div>
+            <input type="text" name="username" th:id="username">
+            <div>비밀번호</div>
+            <input type="password" name="password" placeholder="비밀번호 재확인" th:id="password">
+            <button onclick="cancelEdits()">cancel</button>
+            <button onclick="submitEdit()">write</button>
+        </div>
+    </div>
+</body>
+</html>

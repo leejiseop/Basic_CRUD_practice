@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Basic CRUD practice</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            // HTML 문서를 로드할 때마다 실행합니다.
+            getMessages();
+        })
+
+        function makePostTitle(id, title) {
+            return `<div class="posts" style="margin: 10px 0">
+                        <div style="display:inline; margin-right: 10px;">${id}번 글 </div>
+                        <a href="api/details/${id}">${title}</a>
+                    </div>`;
+        }
+
+        function addHTML(id, title) {
+            let temp_HTML = makePostTitle(id, title);
+            $('#cards-box').append(temp_HTML);
+        }
+
+        function getMessages() {
+            $('#cards-box').empty();
+
+            $.ajax({
+                type: "GET",
+                url: "/api/posts",
+                contentType: "application/json",
+                data: {},
+                success: function (response) {
+                    for (i = 0; i < response.length; i++) {
+                        let post = response[i];
+                        let id = post['id'];
+                        let title = post['title'];
+                        addHTML(id, title);
+                    }
+                }
+
+            });
+        }
+
+        // 글이 비밀번호가 올바른지 확인합니다
+        function isValidPassword(password) {
+            if (password === '') {
+                alert('비밀번호를 입력해주세요');
+                return false;
+            }
+            if (password.trim().length < 4) {
+                alert('비밀번호는 4자 이상 입력해주세요');
+                return false;
+            }
+            return true;
+        }
+
+        // 글이 내용이 올바른지 확인합니다
+        function isValidContents(contents) {
+            if (contents === '') {
+                alert('내용을 입력해주세요');
+                return false;
+            }
+            if (contents.trim().length > 140) {
+                alert('공백 포함 140자 이하로 입력해주세요');
+                return false;
+            }
+            return true;
+        }
+
+        // 글을 작성합니다
+        function writePost() {
+
+            let title = $('#title').val();
+            let contents = $('#contents').val();
+            let username = $('#username').val();
+            let password = $('#password').val();
+
+            if (!(isValidContents(contents) && isValidPassword(password))) {
+                return;
+            }
+
+            let data = {'title': title,
+                        'contents': contents,
+                        'username': username,
+                        'password': password};
+
+            $.ajax({
+                type: "POST",
+                url: "/api/posts",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('메시지가 성공적으로 작성되었습니다.');
+                    window.location.reload();
+                }
+            });
+        }
+
+
+
+
+
+    </script>
+
+</head>
+
+<body>
+<h1>Basic CRUD practice</h1>
+<p>
+    공유하고 싶은 소식을 입력하세요.
+</p>
+
+<div class="area-write">
+    <div>
+        <div>제목</div>
+        <textarea class="field" placeholder="제목을 입력하세요." name="title" th:id="title" cols="30" rows="1"></textarea>
+    </div>
+    <div>
+        <div>내용</div>
+        <textarea class="field" placeholder="공유하고 싶은 소식을 입력하세요." name="contents" th:id="contents" cols="30" rows="5"></textarea>
+    </div>
+    <div>
+        <div>이름</div>
+        <input type="text" placeholder="이름" name="username" th:id="username">
+        <div>비밀번호</div>
+        <input type="password" placeholder="비밀번호" name="password" th:id="password">
+        <button onclick="writePost()">write</button>
+    </div>
+</div>
+
+<div id="cards-box">
+
+
+
+</div>
+
+</body>
+</html>
