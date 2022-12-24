@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +36,14 @@ public class PostService {
     }
 
     @Transactional
-    public Long update(Long id, PostRequestDto requestDto) {
+    public String update(Long id, PostRequestDto requestDto) {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 글입니다.")
         );
-        post.update(requestDto);
-        return post.getId();
+        if (Objects.equals(post.getPassword(), requestDto.getPassword())) {
+            post.update(requestDto);
+            return "update success";
+        } else { return "wrong password"; }
     }
 
     @Transactional

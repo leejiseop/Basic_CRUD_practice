@@ -48,8 +48,6 @@ public class Post extends Timestamped{
         this.username = postRequestDto.getUsername();
         this.password = postRequestDto.getPassword();
         this.contents = postRequestDto.getContents();
-        System.out.println("적용하고 싶은 내용 : " + postRequestDto.getContents());
-        System.out.println("적용 후 : " + this.contents);
     }
 
     public boolean isCorrectPassword(String password) {

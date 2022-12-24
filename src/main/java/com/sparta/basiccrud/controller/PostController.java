@@ -39,7 +39,7 @@ public class PostController {
     }
 
     @PutMapping("/api/details/{id}")
-    public Long updateMemo(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
+    public String updateMemo(@PathVariable Long id, @RequestBody PostRequestDto requestDto) {
         // 비밀번호 따로 받아와서 확인하는 과정 추가... 비밀번호 다르면 익셉션 리턴해야 하나?
         return postService.update(id, requestDto);
     }

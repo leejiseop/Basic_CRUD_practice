@@ -14,16 +14,16 @@
             let new_title = $(`#title`).val();
             let new_contents = $(`#contents`).val();
             let new_username = $(`#username`).val();
-            let new_password = $(`#password`).val();
+            let typed_password = $(`#password`).val();
 
-            if (!(isValidContents(new_contents) && isValidPassword(new_password))) {
+            if (!(isValidContents(new_contents) && isValidPassword(typed_password))) {
                 return;
             }
 
             let data = {'title': new_title,
                         'contents': new_contents,
                         'username': new_username,
-                        'password': new_password};
+                        'password': typed_password};
 
             $.ajax({
                 type: "PUT",
@@ -31,8 +31,14 @@
                 contentType: "application/json",
                 data: JSON.stringify(data),
                 success: function (response) {
-                    alert('메시지 변경에 성공하였습니다.');
-                    window.location.reload();
+                    if (response === "update success") {
+                        alert("변경 완료");
+                        window.location.reload();
+                    } else if (response === "wrong password") {
+                        alert("비밀번호가 다릅니다.");
+                    } else {
+                        alert("오류 발생")
+                    }
                 }
             });
         }
@@ -63,11 +69,11 @@
                 contentType: "application/json",
                 data: password,
                 success: function (response) {
-                    if (response === "wrong password") {
-                        alert("비밀번호가 다릅니다.");
-                    } else if (response === "delete success") {
+                    if (response === "delete success") {
                         alert("삭제 완료");
                         window.location.href = '/';
+                    } else if (response === "wrong password") {
+                        alert("비밀번호가 다릅니다.");
                     } else {
                         alert("오류 발생")
                     }
@@ -156,11 +162,8 @@
         <div style="margin-top: 10px;">
             <input id="post-delete-password" type="password" placeholder="비밀번호를 입력해주세요" style="display: none;">
             <button id="post-delete-cancel-button" style="display: none;" onclick="cancelDeletePassword()">cancel</button>
-<!--            <input id="post-delete-cancel-button" type="button" value="취소" style="display: none;" onclick="cancelDeletePassword()">-->
-
             <button id="post-edit-button" onclick="editPost()">edit</button>
             <button id="post-delete-button" onclick="showDeletePassword()">delete</button>
-<!--            <input id="post-delete-submit-button" type="button" value="삭제" style="display: none;" onclick="submitDelete()">-->
             <button id="post-delete-submit-button" style="display: none;" onclick="submitDelete()">delete</button>
         </div>
     </div>
